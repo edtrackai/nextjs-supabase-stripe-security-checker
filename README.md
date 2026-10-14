@@ -1,38 +1,35 @@
 # nextjs-supabase-stripe-security-checker
 
-A free static scanner for the security mistakes that keep showing up in **Next.js + Supabase + Stripe** apps, especially ones written with AI coding agents. It runs **20 deterministic checks**, uses AST parsing (Babel) where regex would be fragile, and needs no network access and no account.
+**Your AI agent shipped the app. Did it also ship your Stripe secret key, a table without RLS, or a webhook that anyone can call?** One command finds out, locally, in under a second.
 
-![demo: scanning the vulnerable fixture, then a clean app with --fail-on](docs/demo.gif)
+![Demo: 22 checks catch leaked keys, missing RLS and unsafe Stripe webhooks, then a clean app passes --fail-on](docs/demo.gif)
 
-## Install and run
-
-Not published to npm yet. Clone it and run it locally:
+## Quick start
 
 ```bash
 git clone https://github.com/edtrackai/nextjs-supabase-stripe-security-checker.git
-cd nextjs-supabase-stripe-security-checker
-npm install            # one dependency: @babel/parser
+cd nextjs-supabase-stripe-security-checker && npm install
 node bin/nss-security-check.js /path/to/your/app
 ```
 
-Requires Node 18 or later.
+Node 18 or later. There's one dependency (`@babel/parser`). It's free and MIT-licensed, needs no account, makes no network calls and never uploads your code. It isn't on npm yet, so `npx` won't work.
 
-### Options
+- **22 checks** across leaked keys, server auth, Supabase RLS, Stripe webhooks/checkout and hardening. It uses AST parsing where regex would be fragile.
+- **Low noise:** 0 findings on a hardened reference app and on a "near-miss" fixture of safe code that looks like each bug.
+- **CI-ready:** `--fail-on=high` exits 1, and `--json` gives machine-readable output.
+
+## Options
 
 | Flag | What it does |
 |---|---|
 | `--json` | Machine-readable output: `{tool, version, root, filesScanned, counts, findings[]}` |
-| `--fail-on=<sev>` | Exit 1 if any finding is at or above `critical` / `high` / `medium` / `low` (`none` never fails). Exit 2 for bad arguments. |
+| `--fail-on=<sev>` | Exit 1 if any finding is at or above `critical` / `high` / `medium` / `low` (`none` never fails). Exit 2 on bad arguments. |
 | `--list` | Print the check catalogue |
 | `--help` | Usage |
 
-### Use in CI
+In CI: `node path/to/bin/nss-security-check.js . --fail-on=high`
 
-```bash
-node path/to/nss-security-check.js . --fail-on=high
-```
-
-## The 20 checks
+## The 22 checks
 
 | ID | Severity | Area | Check |
 |---|---|---|---|
@@ -54,13 +51,15 @@ node path/to/nss-security-check.js . --fail-on=high
 | S3 | medium | Stripe | Webhook has no idempotency on `event.id` |
 | S4 | high | Stripe | Checkout price or amount taken from the request |
 | S5 | high | Stripe | Access granted on the checkout success page instead of in the webhook |
+| S6 | medium | Stripe | Webhook dedupe that can swallow a failed event: duplicates skipped with no `pending`/`completed` status |
+| S7 | low | Stripe | Billing period read from `items.data[0]` (wrong for multi-item subscriptions since API 2025-03-31.basil) |
 | H1 | medium | Hardening | No security headers in `next.config` |
 | H2 | medium | Hardening | `dangerouslySetInnerHTML` with a non-literal value |
 
 ## How it's tested
 
-- `fixtures/vulnerable-app` triggers all 19 file-based checks, and the tests assert each one at the expected file. K3 is tested on a temporary git repo.
-- `fixtures/clean-app` (a hardened reference app) and `fixtures/near-miss` (safe code that *looks* like each mistake: raw-body webhooks with idempotency, guarded redirects, owner-filtered admin queries, `select using (true)`, JSON-LD) must produce **0 findings**.
+- `fixtures/vulnerable-app` triggers all 21 file-based checks, and the tests assert each one at the expected file. K3 is tested on a temporary git repo.
+- `fixtures/clean-app` (a hardened reference app) and `fixtures/near-miss` (safe code that *looks* like each mistake: raw-body webhooks with pending/completed idempotency, multi-item-safe period lookup, guarded redirects, owner-filtered admin queries, `select using (true)`, JSON-LD) must produce **0 findings**.
 - `npm test` runs the node:test suite, including the CLI flags and exit codes. `npm run smoke` gives a one-line summary.
 
 ## Honest limits
@@ -71,11 +70,13 @@ node path/to/nss-security-check.js . --fail-on=high
 - It doesn't check your live Supabase project, Stripe dashboard settings, dependencies (use `npm audit`) or full git history for secrets (use gitleaks).
 - It's a small free subset of the checks in our paid Launch Audit. There's no AI review, no written report and no fix plan here.
 
-## More from Stack & Ship
-
-- [Free Next.js + Supabase + Stripe security checklist](https://luxurydrive0.gumroad.com/l/security-checklist?utm_source=github&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker)
-- [Ship-Ready AI Rules](https://luxurydrive0.gumroad.com/l/ffjsf?utm_source=github&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker): rules files that stop AI coding agents from writing these bugs in the first place
-- [All our AI rules](https://edtrackai.github.io/ai-rules?utm_source=github&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker)
+## Want the full audit?
+This free CLI is a small subset. If you're about to launch:
+- **[Launch Audit](https://luxurydrive0.gumroad.com/l/launch-audit?utm_source=github&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** 27 automated checks plus a read-only auditor agent for the manual checks, giving a ready / not-ready report with a fix plan.
+- **[Ship-Ready AI Rules](https://luxurydrive0.gumroad.com/l/ffjsf?utm_source=github&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** rules, skills and guardrail hooks that stop AI coding agents writing these bugs in the first place.
+- **[Ship It Bundle](https://luxurydrive0.gumroad.com/l/ship-it-bundle?utm_source=github&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** AI Rules + Launch Audit + Solo Founder OS Pro in one purchase.
+- **[Paid MCP Starter](https://luxurydrive0.gumroad.com/l/paid-mcp-starter?utm_source=github&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** charge for your MCP server with Next.js + Supabase + Stripe.
+- Free: [security checklist](https://luxurydrive0.gumroad.com/l/security-checklist?utm_source=github&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker) · [AI rules](https://edtrackai.github.io/ai-rules?utm_source=github&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker)
 
 ## License
 

@@ -1,7 +1,7 @@
 {
   "name": "nextjs-supabase-stripe-security-checker",
-  "version": "0.2.0",
-  "description": "Free static scanner: 20 checks for common Next.js + Supabase + Stripe security mistakes (AI-agent footguns).",
+  "version": "0.3.0",
+  "description": "Free static scanner: 22 checks for common Next.js + Supabase + Stripe security mistakes (AI-agent footguns).",
   "license": "MIT",
   "type": "module",
   "bin": {

@@ -23,7 +23,8 @@ test("every check except K3 (needs git) fires on the vulnerable fixture, at the 
     A2: "app/dashboard/actions.ts", A3: "app/api/notes/route.ts", A4: "app/api/admin/[id]/route.ts", A5: "app/auth/callback/route.ts",
     R1: "supabase/migrations/0001_init.sql", R2: "supabase/migrations/0001_init.sql", R3: "supabase/migrations/0001_init.sql", R4: "supabase/migrations/0001_init.sql",
     S1: "app/api/webhooks/stripe/route.ts", S2: "app/api/webhooks/stripe/route.ts", S3: "app/api/webhooks/stripe/route.ts", S4: "app/api/checkout/route.ts",
-    S5: "app/checkout/success/page.tsx", H1: "next.config.js", H2: "components/Bio.tsx",
+    S5: "app/checkout/success/page.tsx", S6: "app/api/webhooks/billing/route.ts", S7: "app/api/webhooks/billing/route.ts",
+    H1: "next.config.js", H2: "components/Bio.tsx",
   };
   for (const [id, file] of Object.entries(expect)) assert.ok(at(id, file), `${id} @ ${file}`);
   assert.deepEqual(Object.keys(CHECKS).filter((id) => id !== "K3" && !(id in expect)), []);
@@ -65,11 +66,18 @@ test("secrets are redacted in evidence", () => {
   for (const f of k1) assert.doesNotMatch(f.evidence, /sk_live_[0-9a-zA-Z]{16,}/);
 });
 
+test("S6/S7 stay quiet on the pending/completed webhook and the multi-item-safe period lookup", () => {
+  const nm = scan(fx("near-miss"), { git: false }).findings;
+  assert.ok(!nm.some((f) => f.id === "S6" || f.id === "S7"));
+  assert.equal(vuln.findings.filter((f) => f.id === "S6").length, 1);
+  assert.equal(vuln.findings.filter((f) => f.id === "S7").length, 1);
+});
+
 test("CLI: --json, --fail-on exit codes, --list, bad args", () => {
   const run = (...a) => spawnSync(process.execPath, [bin, ...a], { encoding: "utf8" });
   const j = JSON.parse(run(fx("vulnerable-app"), "--json").stdout);
   assert.equal(j.tool, "nss-security-check");
-  assert.ok(j.findings.length >= 19);
+  assert.ok(j.findings.length >= 21);
   assert.equal(run(fx("vulnerable-app")).status, 0);
   assert.equal(run(fx("vulnerable-app"), "--fail-on=high").status, 1);
   assert.equal(run(fx("clean-app"), "--fail-on=low").status, 0);

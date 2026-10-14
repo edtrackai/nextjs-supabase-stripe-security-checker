@@ -42,4 +42,4 @@ else {
   console.log(SEVERITIES.map((s) => `${s} ${r.counts[s]}`).join(" · "));
   if (r.findings.length) console.log(c("2", "Each hit is a prompt to review, not a verdict. Paid tools with deeper review are linked in the README."));
 }
-process.exit(failing.length ? 1 : 0);
+process.exitCode = failing.length ? 1 : 0; // not process.exit(): it can truncate large piped output
