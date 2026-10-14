@@ -25,6 +25,7 @@ Node 18 or later. There's one dependency (`@babel/parser`). It's free and MIT-li
 | `--json` | Machine-readable output: `{tool, version, root, filesScanned, counts, findings[]}` |
 | `--fail-on=<sev>` | Exit 1 if any finding is at or above `critical` / `high` / `medium` / `low` (`none` never fails). Exit 2 on bad arguments. |
 | `--list` | Print the check catalogue |
+| `--quiet` | Omit the one-line footer about the paid tools (also off with `NO_PROMO=1` or `CI=true`) |
 | `--help` | Usage |
 
 In CI: `node path/to/bin/nss-security-check.js . --fail-on=high`
@@ -70,13 +71,15 @@ In CI: `node path/to/bin/nss-security-check.js . --fail-on=high`
 - It doesn't check your live Supabase project, Stripe dashboard settings, dependencies (use `npm audit`) or full git history for secrets (use gitleaks).
 - It's a small free subset of the checks in our paid Launch Audit. There's no AI review, no written report and no fix plan here.
 
-## Want the full audit?
+## Want more?
 This free CLI is a small subset. If you're about to launch:
-- **[Launch Audit](https://luxurydrive0.gumroad.com/l/launch-audit?utm_source=github&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** 27 automated checks plus a read-only auditor agent for the manual checks, giving a ready / not-ready report with a fix plan.
-- **[Ship-Ready AI Rules](https://luxurydrive0.gumroad.com/l/ffjsf?utm_source=github&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** rules, skills and guardrail hooks that stop AI coding agents writing these bugs in the first place.
-- **[Ship It Bundle](https://luxurydrive0.gumroad.com/l/ship-it-bundle?utm_source=github&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** AI Rules + Launch Audit + Solo Founder OS Pro in one purchase.
-- **[Paid MCP Starter](https://luxurydrive0.gumroad.com/l/paid-mcp-starter?utm_source=github&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** charge for your MCP server with Next.js + Supabase + Stripe.
-- Free: [security checklist](https://luxurydrive0.gumroad.com/l/security-checklist?utm_source=github&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker) · [AI rules](https://edtrackai.github.io/ai-rules?utm_source=github&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker)
+- **[Launch Audit](https://luxurydrive0.gumroad.com/l/launch-audit?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** 28 automated checks plus a read-only auditor agent for the manual checks, giving a ready / not-ready report with a fix plan.
+- **[Ship-Ready AI Rules](https://luxurydrive0.gumroad.com/l/ffjsf?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** rules, skills and guardrail hooks that stop AI coding agents writing these bugs in the first place.
+- **[Ship It Bundle](https://luxurydrive0.gumroad.com/l/ship-it-bundle?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** AI Rules + Launch Audit + Solo Founder OS Pro in one purchase.
+- **[Paid MCP Starter](https://luxurydrive0.gumroad.com/l/paid-mcp-starter?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** charge for your MCP server with Next.js + Supabase + Stripe.
+- Free: [security checklist](https://luxurydrive0.gumroad.com/l/security-checklist?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker) · [AI rules](https://edtrackai.github.io/ai-rules?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker)
+
+The human-readable output ends with one line linking the Launch Audit and AI Rules pack. It's plain text: the CLI makes no network calls and collects no telemetry. Hide it with `--quiet` or `NO_PROMO=1`; it's off automatically when `CI=true`. `--json` output never includes it.
 
 ## License
 

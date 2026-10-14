@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdtempSync, writeFileSync } from "node:fs";
+import { cpSync, mkdtempSync, writeFileSync, readFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { scan } from "../lib/scan.js";
@@ -85,4 +85,18 @@ test("CLI: --json, --fail-on exit codes, --list, bad args", () => {
   assert.equal(run("--list").stdout.trim().split("\n").length, Object.keys(CHECKS).length);
   assert.equal(run(fx("clean-app"), "--fail-on=bogus").status, 2);
   assert.equal(run("/nope/does-not-exist").status, 2);
+});
+
+test("CLI footer: shown in human output, absent with --json, --quiet, NO_PROMO, CI=true; no network code", () => {
+  const env0 = { ...process.env }; delete env0.CI; delete env0.NO_PROMO; delete env0.FORCE_COLOR;
+  const run = (env, ...a) => spawnSync(process.execPath, [bin, fx("vulnerable-app"), ...a], { encoding: "utf8", env: { ...env0, ...env } }).stdout;
+  const has = (o) => o.includes("Want more?") && o.includes("utm_source=checker-cli&utm_medium=cli&utm_campaign=nextjs-supabase-stripe-security-checker");
+  const out = run({});
+  assert.ok(has(out) && /28-check Launch Audit/.test(out) && /l\/launch-audit\?/.test(out) && /l\/ffjsf\?/.test(out));
+  assert.equal(out.trimEnd().split("\n").at(-1).includes("Want more?"), true, "footer is the last line");
+  assert.equal(has(run({ CI: "false" })), true);
+  for (const o of [run({}, "--quiet"), run({ NO_PROMO: "1" }), run({ CI: "true" })]) assert.equal(o.includes("Want more?"), false);
+  const j = run({}, "--json"); assert.equal(j.includes("Want more?") || j.includes("utm_"), false); JSON.parse(j);
+  const src = readFileSync(bin, "utf8") + readdirSync(new URL("../lib/", import.meta.url)).map((f) => readFileSync(new URL(`../lib/${f}`, import.meta.url), "utf8")).join("");
+  assert.equal(/\bfetch\(|node:https?|node:net|node:dgram|XMLHttpRequest/.test(src), false);
 });

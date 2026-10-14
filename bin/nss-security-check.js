@@ -12,7 +12,8 @@ Scan a Next.js + Supabase + Stripe project for ${Object.keys(CHECKS).length} com
 
   --json        machine-readable output
   --fail-on=X   exit 1 if any finding is at severity X or worse (default: none, always exit 0)
-  --list        list all checks and exit`);
+  --list        list all checks and exit
+  --quiet       omit the one-line footer about the paid tools (also off with NO_PROMO=1 or CI=true)`);
   process.exit(0);
 }
 if (args.includes("--list")) {
@@ -40,6 +41,13 @@ else {
     console.log(`         ${c("2", "fix:")} ${f.fix}\n`);
   }
   console.log(SEVERITIES.map((s) => `${s} ${r.counts[s]}`).join(" · "));
-  if (r.findings.length) console.log(c("2", "Each hit is a prompt to review, not a verdict. Paid tools with deeper review are linked in the README."));
+  if (r.findings.length) console.log(c("2", "Each hit is a prompt to review, not a verdict."));
+  // One static footer line: no network call, no tracking beyond the UTM tags in the printed links.
+  const env = process.env;
+  const promoOff = args.includes("--quiet") || (env.NO_PROMO && env.NO_PROMO !== "0") || (env.CI && env.CI !== "false" && env.CI !== "0");
+  if (!promoOff) {
+    const u = (slug) => `https://luxurydrive0.gumroad.com/l/${slug}?utm_source=checker-cli&utm_medium=cli&utm_campaign=nextjs-supabase-stripe-security-checker`;
+    console.log(c("2", `\nWant more? Full 28-check Launch Audit: ${u("launch-audit")} · AI Rules pack: ${u("ffjsf")}  (hide: --quiet or NO_PROMO=1)`));
+  }
 }
 process.exitCode = failing.length ? 1 : 0; // not process.exit(): it can truncate large piped output
