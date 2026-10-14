@@ -6,3 +6,5 @@ create policy "own writes" on public.posts for insert to authenticated with chec
 create function public.is_owner(pid bigint) returns boolean language sql security definer set search_path = '' as $$
   select exists (select 1 from public.posts where id = pid and user_id = auth.uid());
 $$;
+grant select on public.posts to anon, authenticated;
+grant insert on public.posts to authenticated;

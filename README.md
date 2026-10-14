@@ -14,7 +14,7 @@ node bin/nss-security-check.js /path/to/your/app
 
 Node 18 or later. There's one dependency (`@babel/parser`). It's free and MIT-licensed, needs no account, makes no network calls and never uploads your code. It isn't on npm yet, so `npx` won't work.
 
-- **22 checks** across leaked keys, server auth, Supabase RLS, Stripe webhooks/checkout and hardening. It uses AST parsing where regex would be fragile.
+- **24 checks** across leaked keys, server auth, Supabase RLS, Stripe webhooks/checkout and hardening. It uses AST parsing where regex would be fragile.
 - **Low noise:** 0 findings on a hardened reference app and on a "near-miss" fixture of safe code that looks like each bug.
 - **CI-ready:** `--fail-on=high` exits 1, and `--json` gives machine-readable output.
 
@@ -30,7 +30,7 @@ Node 18 or later. There's one dependency (`@babel/parser`). It's free and MIT-li
 
 In CI: `node path/to/bin/nss-security-check.js . --fail-on=high`
 
-## The 22 checks
+## The 24 checks
 
 | ID | Severity | Area | Check |
 |---|---|---|---|
@@ -47,6 +47,8 @@ In CI: `node path/to/bin/nss-security-check.js . --fail-on=high`
 | R2 | critical | RLS | Write policy with `using (true)` / `with check (true)` |
 | R3 | high | RLS | Policy that lets the `anon` role write |
 | R4 | high | RLS | `security definer` function without a fixed `search_path` |
+| R5 | medium | RLS | Table in `public` with no explicit `GRANT`. From [30 Oct 2026](https://supabase.com/changelog/45329-breaking-change-tables-not-exposed-to-data-and-graphql-api-automatically) Supabase stops default grants on new public tables, so the Data API returns `42501` (fresh projects, branches and `db reset` already do) |
+| R6 | high | RLS | Blanket `grant ... on all tables in schema public` / `alter default privileges ... grant` to `anon`/`authenticated` (the quick 42501 fix that also exposes tables without RLS) |
 | S1 | critical | Stripe | Webhook without signature verification (`constructEvent`) |
 | S2 | critical | Stripe | Webhook parses `request.json()` instead of the raw body |
 | S3 | medium | Stripe | Webhook has no idempotency on `event.id` |

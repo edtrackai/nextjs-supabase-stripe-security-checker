@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdtempSync, writeFileSync, readFileSync, readdirSync } from "node:fs";
+import { cpSync, mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { scan } from "../lib/scan.js";
@@ -22,6 +22,7 @@ test("every check except K3 (needs git) fires on the vulnerable fixture, at the 
     K1: "lib/stripe.ts", K2: ".env.local", K4: "components/AdminPanel.tsx", A1: "app/dashboard/page.tsx",
     A2: "app/dashboard/actions.ts", A3: "app/api/notes/route.ts", A4: "app/api/admin/[id]/route.ts", A5: "app/auth/callback/route.ts",
     R1: "supabase/migrations/0001_init.sql", R2: "supabase/migrations/0001_init.sql", R3: "supabase/migrations/0001_init.sql", R4: "supabase/migrations/0001_init.sql",
+    R5: "supabase/migrations/0003_audit_log.sql", R6: "supabase/migrations/0002_fix_42501.sql",
     S1: "app/api/webhooks/stripe/route.ts", S2: "app/api/webhooks/stripe/route.ts", S3: "app/api/webhooks/stripe/route.ts", S4: "app/api/checkout/route.ts",
     S5: "app/checkout/success/page.tsx", S6: "app/api/webhooks/billing/route.ts", S7: "app/api/webhooks/billing/route.ts",
     H1: "next.config.js", H2: "components/Bio.tsx",
@@ -99,4 +100,26 @@ test("CLI footer: shown in human output, absent with --json, --quiet, NO_PROMO, 
   const j = run({}, "--json"); assert.equal(j.includes("Want more?") || j.includes("utm_"), false); JSON.parse(j);
   const src = readFileSync(bin, "utf8") + readdirSync(new URL("../lib/", import.meta.url)).map((f) => readFileSync(new URL(`../lib/${f}`, import.meta.url), "utf8")).join("");
   assert.equal(/\bfetch\(|node:https?|node:net|node:dgram|XMLHttpRequest/.test(src), false);
+});
+
+test("R5/R6: Supabase 30 Oct 2026 Data API grants (per-table, order-aware blanket, default privileges)", () => {
+  const run = (sql) => {
+    const d = mkdtempSync(join(tmpdir(), "nss-r5-"));
+    mkdirSync(join(d, "supabase/migrations"), { recursive: true });
+    sql.forEach((s, i) => writeFileSync(join(d, `supabase/migrations/000${i + 1}.sql`), s));
+    return scan(d, { git: false }).findings.filter((f) => /^R[56]$/.test(f.id)).map((f) => `${f.id} ${f.evidence.split(" ").slice(0, 2).join(" ")}`);
+  };
+  const t = (n) => `create table public.${n} (id int primary key); alter table public.${n} enable row level security;\n`;
+  assert.deepEqual(run([t("a") + t("b") + "grant select on public.a to authenticated;"]), ["R5 table b"]);
+  assert.deepEqual(run([t("ab") + "grant select on table public.a to anon;"]), ["R5 table ab"], "name prefix must not count");
+  assert.deepEqual(run([t("a") + t("b") + 'grant select on "public"."a", public.b to anon, authenticated;']), []);
+  assert.deepEqual(run([t("a") + "grant select on public.a to postgres;"]), ["R5 table a"], "only client/service roles count");
+  assert.deepEqual(run(["create table private.x (id int);"]), [], "non-public schemas are out of scope");
+  // blanket grant covers tables created before it, not after; and is itself R6
+  assert.deepEqual(run([t("a"), "grant select on all tables in schema public to anon;", t("late")]), ["R6 grant select", "R5 table late"]);
+  // default privileges cover later tables; to service_role only is not R6
+  assert.deepEqual(run(["alter default privileges in schema public grant select on tables to service_role;", t("a")]), []);
+  assert.deepEqual(run(["alter default privileges for role postgres in schema public grant all on tables to anon;", t("a")]), ["R6 alter default"]);
+  // the opt-in revoke from the changelog is not a grant
+  assert.deepEqual(run(["alter default privileges for role postgres in schema public revoke select, insert, update, delete on tables from anon, authenticated, service_role;", t("a")]), ["R5 table a"]);
 });
