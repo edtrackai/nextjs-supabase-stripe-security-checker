@@ -18,7 +18,7 @@ Node 18 or later. There's one dependency (`@babel/parser`). It's free and MIT-li
 - **Low noise:** 0 findings on a hardened reference app and on a "near-miss" fixture of safe code that looks like each bug.
 - **CI-ready:** `--fail-on=high` exits 1, and `--json` gives machine-readable output.
 
-*Ad (paid, same author):* Want the fixes? [Launch Audit ($12)](https://luxurydrive0.gumroad.com/l/launch-audit?utm_source=github&utm_medium=readme&utm_campaign=checker) adds 28 checks, a read-only AI auditor and a file:line fix plan.
+*Ad (paid, same author):* Want the fixes? [Launch Audit ($12)](https://edtrackai.github.io/launch-audit?utm_source=github&utm_medium=readme&utm_content=launch-audit) adds 28 checks, a read-only AI auditor and a file:line fix plan.
 
 ## Options
 
@@ -31,6 +31,26 @@ Node 18 or later. There's one dependency (`@babel/parser`). It's free and MIT-li
 | `--help` | Usage |
 
 In CI: `node path/to/bin/nss-security-check.js . --fail-on=high`, or use the **GitHub Action** (job summary, annotations, one sticky PR comment, only `GITHUB_TOKEN`). See the example workflow and permissions in [docs/github-action.md](docs/github-action.md).
+
+```yaml
+# .github/workflows/security-check.yml
+name: Security check
+on: [pull_request]
+permissions:
+  contents: read
+  pull-requests: write   # only for the PR comment; drop it with comment: false
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: edtrackai/nextjs-supabase-stripe-security-checker@v0   # or pin @v0.5.0 / a commit SHA
+        with:
+          path: .
+          fail-on: high
+```
+
+Changes are listed in [CHANGELOG.md](CHANGELOG.md) (0.5.0 adds the Action).
 
 ## The 24 checks
 
@@ -79,7 +99,7 @@ In CI: `node path/to/bin/nss-security-check.js . --fail-on=high`, or use the **G
 *Ad: the products below are paid products from the same author (Stack & Ship). The CLI stays free and MIT-licensed either way.*
 
 This free CLI is a small subset. If you're about to launch:
-- **[Launch Audit](https://luxurydrive0.gumroad.com/l/launch-audit?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** 28 automated checks plus a read-only auditor agent for the manual checks, giving a ready / not-ready report with a fix plan.
+- **[Launch Audit](https://edtrackai.github.io/launch-audit?utm_source=github&utm_medium=readme&utm_content=launch-audit):** 28 automated checks plus a read-only auditor agent for the manual checks, giving a ready / not-ready report with a fix plan.
 - **[Ship-Ready AI Rules](https://luxurydrive0.gumroad.com/l/ffjsf?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** rules, skills and guardrail hooks that stop AI coding agents writing these bugs in the first place.
 - **[Ship It Bundle](https://luxurydrive0.gumroad.com/l/ship-it-bundle?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** AI Rules + Launch Audit + Solo Founder OS Pro in one purchase.
 - **[Paid MCP Starter](https://luxurydrive0.gumroad.com/l/paid-mcp-starter?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** charge for your MCP server with Next.js + Supabase + Stripe.
