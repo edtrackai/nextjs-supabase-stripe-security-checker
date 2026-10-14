@@ -88,16 +88,19 @@ test("CLI: --json, --fail-on exit codes, --list, bad args", () => {
   assert.equal(run("/nope/does-not-exist").status, 2);
 });
 
-test("CLI footer: shown in human output, absent with --json, --quiet, NO_PROMO, CI=true; no network code", () => {
-  const env0 = { ...process.env }; delete env0.CI; delete env0.NO_PROMO; delete env0.FORCE_COLOR;
-  const run = (env, ...a) => spawnSync(process.execPath, [bin, fx("vulnerable-app"), ...a], { encoding: "utf8", env: { ...env0, ...env } }).stdout;
+test("CLI footer: stderr only, on a terminal; absent with --json, --quiet, NO_PROMO, CI, GITHUB_ACTIONS or no TTY; no network code", () => {
+  const env0 = { ...process.env }; for (const k of ["CI", "NO_PROMO", "FORCE_COLOR", "GITHUB_ACTIONS", "NSS_FORCE_TTY"]) delete env0[k];
+  const run = (env, ...a) => spawnSync(process.execPath, [bin, fx("vulnerable-app"), ...a], { encoding: "utf8", env: { ...env0, ...env } });
+  const T = { NSS_FORCE_TTY: "1" }; // stand-in for an interactive terminal
   const has = (o) => o.includes("Want more?") && o.includes("utm_source=checker-cli&utm_medium=cli&utm_campaign=nextjs-supabase-stripe-security-checker");
-  const out = run({});
-  assert.ok(has(out) && /28-check Launch Audit/.test(out) && /l\/launch-audit\?/.test(out) && /l\/ffjsf\?/.test(out));
-  assert.equal(out.trimEnd().split("\n").at(-1).includes("Want more?"), true, "footer is the last line");
-  assert.equal(has(run({ CI: "false" })), true);
-  for (const o of [run({}, "--quiet"), run({ NO_PROMO: "1" }), run({ CI: "true" })]) assert.equal(o.includes("Want more?"), false);
-  const j = run({}, "--json"); assert.equal(j.includes("Want more?") || j.includes("utm_"), false); JSON.parse(j);
+  const r = run(T);
+  assert.ok(has(r.stderr) && /28-check Launch Audit/.test(r.stderr) && /l\/launch-audit\?/.test(r.stderr) && /l\/ffjsf\?/.test(r.stderr));
+  assert.equal(r.stdout.includes("Want more?"), false, "never on stdout");
+  assert.equal(has(run({ ...T, CI: "false" }).stderr), true);
+  for (const x of [run({}), run(T, "--quiet"), run({ ...T, NO_PROMO: "1" }), run({ ...T, CI: "true" }), run({ ...T, CI: "1" }), run({ ...T, GITHUB_ACTIONS: "true" })])
+    assert.equal(x.stdout.includes("Want more?") || x.stderr.includes("Want more?"), false);
+  const j = run(T, "--json"); assert.equal(j.stdout.includes("utm_") || j.stderr.includes("Want more?"), false); JSON.parse(j.stdout);
+  assert.match(spawnSync(process.execPath, [bin, "--help"], { encoding: "utf8" }).stdout.split("\n")[0], /\[--quiet\]/);
   const src = readFileSync(bin, "utf8") + readdirSync(new URL("../lib/", import.meta.url)).map((f) => readFileSync(new URL(`../lib/${f}`, import.meta.url), "utf8")).join("");
   assert.equal(/\bfetch\(|node:https?|node:net|node:dgram|XMLHttpRequest/.test(src), false);
 });

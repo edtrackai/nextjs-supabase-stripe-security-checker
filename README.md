@@ -2,7 +2,7 @@
 
 **Your AI agent shipped the app. Did it also ship your Stripe secret key, a table without RLS, or a webhook that anyone can call?** One command finds out, locally, in under a second.
 
-![Demo: 22 checks catch leaked keys, missing RLS and unsafe Stripe webhooks, then a clean app passes --fail-on](docs/demo.gif)
+![Demo: 24 checks catch leaked keys, missing RLS and grants, and unsafe Stripe webhooks, then a clean app passes --fail-on](docs/demo.gif)
 
 ## Quick start
 
@@ -25,7 +25,7 @@ Node 18 or later. There's one dependency (`@babel/parser`). It's free and MIT-li
 | `--json` | Machine-readable output: `{tool, version, root, filesScanned, counts, findings[]}` |
 | `--fail-on=<sev>` | Exit 1 if any finding is at or above `critical` / `high` / `medium` / `low` (`none` never fails). Exit 2 on bad arguments. |
 | `--list` | Print the check catalogue |
-| `--quiet` | Omit the one-line footer about the paid tools (also off with `NO_PROMO=1` or `CI=true`) |
+| `--quiet` | Omit the one-line footer about the paid tools (printed to stderr on a terminal only; also off with `NO_PROMO=1`, `CI` or `GITHUB_ACTIONS`) |
 | `--help` | Usage |
 
 In CI: `node path/to/bin/nss-security-check.js . --fail-on=high`
@@ -81,7 +81,7 @@ This free CLI is a small subset. If you're about to launch:
 - **[Paid MCP Starter](https://luxurydrive0.gumroad.com/l/paid-mcp-starter?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** charge for your MCP server with Next.js + Supabase + Stripe.
 - Free: [security checklist](https://luxurydrive0.gumroad.com/l/security-checklist?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker) · [AI rules](https://edtrackai.github.io/ai-rules?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker)
 
-The human-readable output ends with one line linking the Launch Audit and AI Rules pack. It's plain text: the CLI makes no network calls and collects no telemetry. Hide it with `--quiet` or `NO_PROMO=1`; it's off automatically when `CI=true`. `--json` output never includes it.
+On an interactive terminal, the human-readable output ends with one line on stderr linking the Launch Audit and AI Rules pack. It's plain text: the CLI makes no network calls and collects no telemetry. It never appears in pipes, redirected reports (`> report.txt`) or `--json`, and it's off when `CI` or `GITHUB_ACTIONS` is set. Hide it anywhere with `--quiet` or `NO_PROMO=1`.
 
 ## License
 
