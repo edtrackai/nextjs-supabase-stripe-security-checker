@@ -9,6 +9,8 @@
   },
   "files": [
     "bin",
+    "action",
+    "action.yml",
     "lib",
     "LICENSE",
     "CHANGELOG.md",
@@ -34,7 +36,7 @@
   "scripts": {
     "start": "node bin/nss-security-check.js",
     "smoke": "node scripts/smoke.js",
-    "test": "node --test tests/scan.test.mjs"
+    "test": "node --test tests/scan.test.mjs tests/action.test.mjs"
   },
   "dependencies": {
     "@babel/parser": "^7.29.9"

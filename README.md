@@ -18,6 +18,8 @@ Node 18 or later. There's one dependency (`@babel/parser`). It's free and MIT-li
 - **Low noise:** 0 findings on a hardened reference app and on a "near-miss" fixture of safe code that looks like each bug.
 - **CI-ready:** `--fail-on=high` exits 1, and `--json` gives machine-readable output.
 
+*Ad (paid, same author):* Want the fixes? [Launch Audit ($12)](https://luxurydrive0.gumroad.com/l/launch-audit?utm_source=github&utm_medium=readme&utm_campaign=checker) adds 28 checks, a read-only AI auditor and a file:line fix plan.
+
 ## Options
 
 | Flag | What it does |
@@ -28,7 +30,7 @@ Node 18 or later. There's one dependency (`@babel/parser`). It's free and MIT-li
 | `--quiet` | Omit the one-line footer about the paid tools (printed to stderr on a terminal only; also off with `NO_PROMO=1`, `CI` or `GITHUB_ACTIONS`) |
 | `--help` | Usage |
 
-In CI: `node path/to/bin/nss-security-check.js . --fail-on=high`
+In CI: `node path/to/bin/nss-security-check.js . --fail-on=high`, or use the **GitHub Action** (job summary, annotations, one sticky PR comment, only `GITHUB_TOKEN`). See the example workflow and permissions in [docs/github-action.md](docs/github-action.md).
 
 ## The 24 checks
 
