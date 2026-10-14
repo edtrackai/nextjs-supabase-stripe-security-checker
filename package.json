@@ -1,0 +1,37 @@
+{
+  "name": "nextjs-supabase-stripe-security-checker",
+  "version": "0.1.0",
+  "description": "Free static scanner for common Next.js + Supabase + Stripe security mistakes (AI-agent footguns).",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "nss-security-check": "./bin/nss-security-check.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "nextjs",
+    "supabase",
+    "stripe",
+    "security",
+    "static-analysis",
+    "rls",
+    "webhook"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edtrackai/nextjs-supabase-stripe-security-checker"
+  },
+  "author": "Stack & Ship",
+  "scripts": {
+    "start": "node bin/nss-security-check.js",
+    "smoke": "node scripts/smoke.js"
+  }
+}
