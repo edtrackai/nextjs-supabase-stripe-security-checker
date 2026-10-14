@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1 (2026-10-14)
+- Fix-text wording for S3 and S6: reprocess a still-pending Stripe event only when handlers are idempotent upserts keyed on Stripe ids, or after an atomic lease claim (`locked_until`) so a crashed attempt can be reclaimed; side effects (emails, credit grants) need their own dedupe key. The checks themselves (detection, severities, count of 24) are unchanged.
+- Clean fixture comment updated to match.
+
 ## 0.5.0 (2026-10-14)
 - **GitHub Action** (`action.yml`, composite): job summary, file/line annotations, and one sticky PR comment that's updated on re-runs. Inputs `path`, `fail-on`, `comment`, `github-token`; outputs `findings`, `failing`, `comment-id`. Evidence is redacted; no ads in CI. See docs/github-action.md. Use `@v0` or pin `@v0.5.0`.
 - The comment is matched only on comments by `github-actions[bot]`, and the hidden marker includes the scan path, so several action steps in one PR keep separate comments. Path-less v0.4.x comments are adopted.
