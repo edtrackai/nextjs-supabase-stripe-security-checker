@@ -1,0 +1,49 @@
+name: "Next.js Supabase Stripe Security Check"
+description: "Static scan for Next.js + Supabase + Stripe security mistakes (RLS, grants, webhooks, keys). Job summary + one PR comment."
+author: "Stack & Ship"
+branding:
+  icon: "shield"
+  color: "green"
+inputs:
+  path:
+    description: "Directory to scan, relative to the repository root."
+    required: false
+    default: "."
+  fail-on:
+    description: "Fail the step if any finding is at or above this severity: critical, high, medium, low, or none."
+    required: false
+    default: "high"
+  comment:
+    description: "Post or update a single PR comment with the findings (pull_request events only)."
+    required: false
+    default: "true"
+  github-token:
+    description: "Token used only to read and write that PR comment. The default GITHUB_TOKEN is enough with 'pull-requests: write'."
+    required: false
+    default: ${{ github.token }}
+outputs:
+  findings:
+    description: "Total number of findings."
+    value: ${{ steps.scan.outputs.findings }}
+  failing:
+    description: "Number of findings at or above fail-on."
+    value: ${{ steps.scan.outputs.failing }}
+  comment-id:
+    description: "ID of the PR comment that was created or updated, if any."
+    value: ${{ steps.scan.outputs.comment-id }}
+runs:
+  using: "composite"
+  steps:
+    - name: Install scanner dependencies
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm ci --omit=dev --ignore-scripts --no-audit --no-fund --loglevel=error
+    - name: Scan
+      id: scan
+      shell: bash
+      env:
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_COMMENT: ${{ inputs.comment }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: node "$GITHUB_ACTION_PATH/action/run.mjs"
