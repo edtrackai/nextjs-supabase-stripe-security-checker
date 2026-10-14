@@ -52,7 +52,8 @@ else {
   const promoOff = !term || args.includes("--quiet") || on(env.NO_PROMO) || on(env.CI) || on(env.GITHUB_ACTIONS);
   if (!promoOff) {
     const u = (slug) => `https://luxurydrive0.gumroad.com/l/${slug}?utm_source=checker-cli&utm_medium=cli&utm_campaign=nextjs-supabase-stripe-security-checker`;
-    console.error(c("2", `\nWant more? Full 28-check Launch Audit: ${u("launch-audit")} · AI Rules pack: ${u("ffjsf")}  (hide: --quiet or NO_PROMO=1)`));
+    // Labelled as an ad (UK CAP Code 2.1/2.3: marketing must be obviously identifiable).
+    console.error(c("2", `\nAd (paid tools from the same author): 28-check Launch Audit $12 ${u("launch-audit")} · AI Rules pack $19 ${u("ffjsf")}  (hide: --quiet or NO_PROMO=1)`));
   }
 }
 process.exitCode = failing.length ? 1 : 0; // not process.exit(): it can truncate large piped output

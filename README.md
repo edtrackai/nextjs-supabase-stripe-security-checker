@@ -74,6 +74,8 @@ In CI: `node path/to/bin/nss-security-check.js . --fail-on=high`
 - It's a small free subset of the checks in our paid Launch Audit. There's no AI review, no written report and no fix plan here.
 
 ## Want more?
+*Ad: the products below are paid products from the same author (Stack & Ship). The CLI stays free and MIT-licensed either way.*
+
 This free CLI is a small subset. If you're about to launch:
 - **[Launch Audit](https://luxurydrive0.gumroad.com/l/launch-audit?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** 28 automated checks plus a read-only auditor agent for the manual checks, giving a ready / not-ready report with a fix plan.
 - **[Ship-Ready AI Rules](https://luxurydrive0.gumroad.com/l/ffjsf?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** rules, skills and guardrail hooks that stop AI coding agents writing these bugs in the first place.
@@ -81,7 +83,7 @@ This free CLI is a small subset. If you're about to launch:
 - **[Paid MCP Starter](https://luxurydrive0.gumroad.com/l/paid-mcp-starter?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker):** charge for your MCP server with Next.js + Supabase + Stripe.
 - Free: [security checklist](https://luxurydrive0.gumroad.com/l/security-checklist?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker) · [AI rules](https://edtrackai.github.io/ai-rules?utm_source=checker-readme&utm_medium=readme&utm_campaign=nextjs-supabase-stripe-security-checker)
 
-On an interactive terminal, the human-readable output ends with one line on stderr linking the Launch Audit and AI Rules pack. It's plain text: the CLI makes no network calls and collects no telemetry. It never appears in pipes, redirected reports (`> report.txt`) or `--json`, and it's off when `CI` or `GITHUB_ACTIONS` is set. Hide it anywhere with `--quiet` or `NO_PROMO=1`.
+On an interactive terminal, the human-readable output ends with one line on stderr, labelled "Ad (paid tools from the same author)", linking the Launch Audit ($12) and AI Rules pack ($19). It's plain text: the CLI makes no network calls and collects no telemetry. It never appears in pipes, redirected reports (`> report.txt`) or `--json`, and it's off when `CI` or `GITHUB_ACTIONS` is set. Hide it anywhere with `--quiet` or `NO_PROMO=1`.
 
 ## License
 

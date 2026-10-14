@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1 (2026-10-14)
+- The terminal footer is now labelled as an ad, per a marketing compliance review (UK CAP Code 2.1/2.3): "Ad (paid tools from the same author): 28-check Launch Audit $12 <link> · AI Rules pack $19 <link> (hide: --quiet or NO_PROMO=1)". It is still stderr-only, shown only on an interactive terminal, and off in CI, pipes, redirects and `--json`.
+- README "Want more?" opens with an ad/ownership disclosure.
+
 ## 0.4.0 (2026-10-14)
 - **New R5 (medium):** a `public` table in `supabase/migrations` with no explicit per-table `GRANT`. From 30 Oct 2026, Supabase stops default grants on new public tables, so the Data API answers `42501` (supabase.com/changelog/45329). It's order-aware for blanket grants and default privileges.
 - **New R6 (high):** a blanket `grant ... on all tables in schema public` / `alter default privileges ... grant` to `anon`/`authenticated`.

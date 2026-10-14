@@ -92,14 +92,16 @@ test("CLI footer: stderr only, on a terminal; absent with --json, --quiet, NO_PR
   const env0 = { ...process.env }; for (const k of ["CI", "NO_PROMO", "FORCE_COLOR", "GITHUB_ACTIONS", "NSS_FORCE_TTY"]) delete env0[k];
   const run = (env, ...a) => spawnSync(process.execPath, [bin, fx("vulnerable-app"), ...a], { encoding: "utf8", env: { ...env0, ...env } });
   const T = { NSS_FORCE_TTY: "1" }; // stand-in for an interactive terminal
-  const has = (o) => o.includes("Want more?") && o.includes("utm_source=checker-cli&utm_medium=cli&utm_campaign=nextjs-supabase-stripe-security-checker");
+  const AD = "Ad (paid tools from the same author): 28-check Launch Audit $12 ";
+  const has = (o) => o.includes(AD) && o.includes("utm_source=checker-cli&utm_medium=cli&utm_campaign=nextjs-supabase-stripe-security-checker");
   const r = run(T);
-  assert.ok(has(r.stderr) && /28-check Launch Audit/.test(r.stderr) && /l\/launch-audit\?/.test(r.stderr) && /l\/ffjsf\?/.test(r.stderr));
-  assert.equal(r.stdout.includes("Want more?"), false, "never on stdout");
+  assert.ok(has(r.stderr) && /l\/launch-audit\?/.test(r.stderr) && /l\/ffjsf\?/.test(r.stderr));
+  assert.match(r.stderr, /^Ad \(paid tools from the same author\): 28-check Launch Audit \$12 https:\/\/\S+ · AI Rules pack \$19 https:\/\/\S+  \(hide: --quiet or NO_PROMO=1\)$/m);
+  assert.equal(r.stdout.includes("Ad (paid"), false, "never on stdout");
   assert.equal(has(run({ ...T, CI: "false" }).stderr), true);
   for (const x of [run({}), run(T, "--quiet"), run({ ...T, NO_PROMO: "1" }), run({ ...T, CI: "true" }), run({ ...T, CI: "1" }), run({ ...T, GITHUB_ACTIONS: "true" })])
-    assert.equal(x.stdout.includes("Want more?") || x.stderr.includes("Want more?"), false);
-  const j = run(T, "--json"); assert.equal(j.stdout.includes("utm_") || j.stderr.includes("Want more?"), false); JSON.parse(j.stdout);
+    assert.equal(x.stdout.includes("Ad (paid") || x.stderr.includes("Ad (paid"), false);
+  const j = run(T, "--json"); assert.equal(j.stdout.includes("utm_") || j.stderr.includes("Ad (paid"), false); JSON.parse(j.stdout);
   assert.match(spawnSync(process.execPath, [bin, "--help"], { encoding: "utf8" }).stdout.split("\n")[0], /\[--quiet\]/);
   const src = readFileSync(bin, "utf8") + readdirSync(new URL("../lib/", import.meta.url)).map((f) => readFileSync(new URL(`../lib/${f}`, import.meta.url), "utf8")).join("");
   assert.equal(/\bfetch\(|node:https?|node:net|node:dgram|XMLHttpRequest/.test(src), false);
