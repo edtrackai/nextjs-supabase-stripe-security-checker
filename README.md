@@ -107,6 +107,11 @@ This free CLI is a small subset. If you're about to launch:
 
 On an interactive terminal, the human-readable output ends with one line on stderr, labelled "Ad (paid tools from the same author)", linking the Launch Audit ($12) and AI Rules pack ($19). It's plain text: the CLI makes no network calls and collects no telemetry. It never appears in pipes, redirected reports (`> report.txt`) or `--json`, and it's off when `CI` or `GITHUB_ACTIONS` is set. Hide it anywhere with `--quiet` or `NO_PROMO=1`.
 
+## Related free tools
+
+- [ship-ready-skills](https://github.com/edtrackai/ship-ready-skills): free Agent Skills that review Supabase RLS and grants, and Stripe webhook handlers (`npx skills add edtrackai/ship-ready-skills`).
+- [Ship-Ready AI Rules (free sample)](https://github.com/edtrackai/ship-ready-ai-rules-free-sample): free Cursor/Claude rules that stop AI agents shipping these mistakes in Next.js + Supabase + Stripe.
+
 ## License
 
 MIT
