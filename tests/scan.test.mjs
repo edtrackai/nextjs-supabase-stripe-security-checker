@@ -43,9 +43,14 @@ test("K3: a .env file with values tracked by git is flagged; untracked is not", 
   const d = mkdtempSync(join(tmpdir(), "nss-"));
   cpSync(fx("clean-app"), d, { recursive: true });
   writeFileSync(join(d, ".env.local"), "STRIPE_SECRET_KEY=sk_test_x\n");
-  assert.ok(!scan(d).findings.some((f) => f.id === "K3"));
+  const nogit = scan(d);
+  assert.ok(!nogit.findings.some((f) => f.id === "K3"));
+  assert.match(nogit.notes.join(" "), /K3 skipped: not a git repo/, "L-01: warn instead of skipping silently");
   for (const a of [["init", "-q"], ["add", "-f", ".env.local"]]) spawnSync("git", a, { cwd: d });
-  assert.ok(scan(d).findings.some((f) => f.id === "K3" && f.file === ".env.local"));
+  const withGit = scan(d);
+  assert.ok(withGit.findings.some((f) => f.id === "K3" && f.file === ".env.local"));
+  assert.deepEqual(withGit.notes, []);
+  assert.deepEqual(scan(d, { git: false }).notes, [], "git disabled on purpose: no note");
 });
 
 test("0 findings on the clean reference app (Ship-Ready demo) and on the near-miss fixture", () => {
