@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { scan } from "../lib/scan.js";
 import { CHECKS } from "../lib/checks.js";
+import { adLine, AD_GRANTS, AD_WEBHOOK, AD_GENERIC } from "../lib/promo.js";
 
 const fx = (n) => new URL(`../fixtures/${n}/`, import.meta.url).pathname;
 const bin = new URL("../bin/nss-security-check.js", import.meta.url).pathname;
@@ -97,11 +98,11 @@ test("CLI footer: stderr only, on a terminal; absent with --json, --quiet, NO_PR
   const env0 = { ...process.env }; for (const k of ["CI", "NO_PROMO", "FORCE_COLOR", "GITHUB_ACTIONS", "NSS_FORCE_TTY"]) delete env0[k];
   const run = (env, ...a) => spawnSync(process.execPath, [bin, fx("vulnerable-app"), ...a], { encoding: "utf8", env: { ...env0, ...env } });
   const T = { NSS_FORCE_TTY: "1" }; // stand-in for an interactive terminal
-  const AD = "Ad (paid tools from the same author): 28-check Launch Audit $12 ";
-  const has = (o) => o.includes(AD) && o.includes("utm_source=checker-cli&utm_medium=cli&utm_campaign=nextjs-supabase-stripe-security-checker");
+  // vulnerable-app has R5/R6, so its one Ad line is the grants line (see the contextual-ad test below).
+  const has = (o) => o.includes(AD_GRANTS) && o.includes("utm_source=checker-cli&utm_medium=cli&utm_campaign=nextjs-supabase-stripe-security-checker");
   const r = run(T);
-  assert.ok(has(r.stderr) && /l\/launch-audit\?/.test(r.stderr) && /l\/ffjsf\?/.test(r.stderr));
-  assert.match(r.stderr, /^Ad \(paid tools from the same author\): 28-check Launch Audit \$12 https:\/\/\S+ · AI Rules pack \$19 https:\/\/\S+  \(hide: --quiet or NO_PROMO=1\)$/m);
+  assert.ok(has(r.stderr));
+  assert.equal((r.stderr.match(/^Ad \(paid/gm) || []).length, 1, "one Ad line per run");
   assert.equal(r.stdout.includes("Ad (paid"), false, "never on stdout");
   assert.equal(has(run({ ...T, CI: "false" }).stderr), true);
   for (const x of [run({}), run(T, "--quiet"), run({ ...T, NO_PROMO: "1" }), run({ ...T, CI: "true" }), run({ ...T, CI: "1" }), run({ ...T, GITHUB_ACTIONS: "true" })])
@@ -110,6 +111,30 @@ test("CLI footer: stderr only, on a terminal; absent with --json, --quiet, NO_PR
   assert.match(spawnSync(process.execPath, [bin, "--help"], { encoding: "utf8" }).stdout.split("\n")[0], /\[--quiet\]/);
   const src = readFileSync(bin, "utf8") + readdirSync(new URL("../lib/", import.meta.url)).map((f) => readFileSync(new URL(`../lib/${f}`, import.meta.url), "utf8")).join("");
   assert.equal(/\bfetch\(|node:https?|node:net|node:dgram|XMLHttpRequest/.test(src), false);
+});
+
+test("contextual Ad line: grants -> AI Rules only; webhook -> Launch Audit; otherwise the generic footer; one line per run", () => {
+  const f = (...ids) => ids.map((id) => ({ id }));
+  assert.equal(adLine(f("R5")), AD_GRANTS); assert.equal(adLine(f("R6")), AD_GRANTS);
+  for (const id of ["S1", "S2", "S3", "S6"]) assert.equal(adLine(f(id)), AD_WEBHOOK);
+  assert.equal(adLine(f("R5", "S3", "S1")), AD_GRANTS, "never Launch Audit on a grants finding");
+  assert.equal(adLine(f("R1", "S7", "K1")), AD_GENERIC); assert.equal(adLine([]), AD_GENERIC);
+  for (const l of [AD_GRANTS, AD_WEBHOOK, AD_GENERIC]) assert.match(l, /^Ad \(paid/);
+  assert.match(AD_GRANTS, /edtrackai\.github\.io\/ai-rules\?\S*utm_content=r5$/); assert.doesNotMatch(AD_GRANTS, /launch-audit/i);
+  assert.match(AD_WEBHOOK, /edtrackai\.github\.io\/launch-audit\?\S*utm_content=s3$/);
+  // CLI end to end: a webhook-only app gets the Launch Audit line on stderr, once, and nothing else.
+  const d = mkdtempSync(join(tmpdir(), "nss-ad-"));
+  cpSync(join(fx("vulnerable-app"), "app/api/webhooks"), join(d, "app/api/webhooks"), { recursive: true }); // webhook findings only, no SQL
+  const env0 = { ...process.env }; for (const k of ["CI", "NO_PROMO", "GITHUB_ACTIONS", "FORCE_COLOR"]) delete env0[k];
+  const w = spawnSync(process.execPath, [bin, d], { encoding: "utf8", env: { ...env0, NSS_FORCE_TTY: "1" } });
+  assert.ok(/\bS[1236]\b/.test(w.stdout), w.stdout);
+  assert.equal((w.stderr.match(/^Ad \(paid/gm) || []).length, 1);
+  assert.ok(w.stderr.includes(AD_WEBHOOK)); assert.equal(w.stdout.includes("Ad (paid"), false);
+  const q = spawnSync(process.execPath, [bin, d, "--quiet"], { encoding: "utf8", env: { ...env0, NSS_FORCE_TTY: "1" } });
+  assert.equal(q.stderr.includes("Ad (paid"), false);
+  // clean app: generic footer only
+  const c = spawnSync(process.execPath, [bin, fx("clean-app")], { encoding: "utf8", env: { ...env0, NSS_FORCE_TTY: "1" } });
+  assert.ok(c.stderr.includes(AD_GENERIC)); assert.equal((c.stderr.match(/^Ad \(paid/gm) || []).length, 1);
 });
 
 test("R5/R6: Supabase 30 Oct 2026 Data API grants (per-table, order-aware blanket, default privileges)", () => {

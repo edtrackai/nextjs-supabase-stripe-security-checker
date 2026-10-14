@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { existsSync, statSync } from "node:fs";
 import { scan } from "../lib/scan.js";
 import { CHECKS, SEVERITIES } from "../lib/checks.js";
+import { adLine } from "../lib/promo.js";
 
 const args = process.argv.slice(2);
 if (args.includes("-h") || args.includes("--help")) {
@@ -52,9 +53,9 @@ else {
   const term = process.stdout.isTTY || env.NSS_FORCE_TTY === "1";
   const promoOff = !term || args.includes("--quiet") || on(env.NO_PROMO) || on(env.CI) || on(env.GITHUB_ACTIONS);
   if (!promoOff) {
-    const u = (slug) => `https://luxurydrive0.gumroad.com/l/${slug}?utm_source=checker-cli&utm_medium=cli&utm_campaign=nextjs-supabase-stripe-security-checker`;
     // Labelled as an ad (UK CAP Code 2.1/2.3: marketing must be obviously identifiable).
-    console.error(c("2", `\nAd (paid tools from the same author): 28-check Launch Audit $12 ${u("launch-audit")} · AI Rules pack $19 ${u("ffjsf")}  (hide: --quiet or NO_PROMO=1)`));
+    // One line per run: a finding-specific line replaces the generic footer.
+    console.error(c("2", `\n${adLine(r.findings)}`));
   }
 }
 process.exitCode = failing.length ? 1 : 0; // not process.exit(): it can truncate large piped output

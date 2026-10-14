@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.6.0 (2026-10-14)
+- The terminal Ad line now depends on the findings, and there is still at most one per run: an R5/R6 (Supabase grants) finding shows the AI Rules v2 line, an S1/S2/S3/S6 (Stripe webhook) finding shows the Launch Audit line, and anything else shows the previous generic footer. The Launch Audit line is never shown for a grants finding. Same gating as before: stderr only, interactive terminal only, off with `--json`, `--quiet`, `NO_PROMO=1`, `CI` or `GITHUB_ACTIONS`. The GitHub Action's comment and summary stay ad-free. No check changes (24).
+
 ## 0.5.1 (2026-10-14)
 - Fix-text wording for S3 and S6: reprocess a still-pending Stripe event only when handlers are idempotent upserts keyed on Stripe ids, or after an atomic lease claim (`locked_until`) so a crashed attempt can be reclaimed; side effects (emails, credit grants) need their own dedupe key. The checks themselves (detection, severities, count of 24) are unchanged.
 - Clean fixture comment updated to match.
