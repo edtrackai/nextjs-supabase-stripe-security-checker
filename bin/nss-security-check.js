@@ -1,54 +1,45 @@
 #!/usr/bin/env node
-/**
- * nss-security-check — free heuristic scanner for Next.js + Supabase + Stripe.
- * Usage:
- *   nss-security-check [dir] [--json]
- *   node bin/nss-security-check.js [dir] [--json]
- *
- * Always exits 0. Prints a scored report to stdout (or JSON with --json).
- */
 import { resolve } from "node:path";
 import { existsSync, statSync } from "node:fs";
-import { scan, formatReport } from "../lib/scan.js";
+import { scan } from "../lib/scan.js";
+import { CHECKS, SEVERITIES } from "../lib/checks.js";
 
 const args = process.argv.slice(2);
-const json = args.includes("--json");
-const help = args.includes("--help") || args.includes("-h");
-const positional = args.filter((a) => !a.startsWith("-"));
-const target = resolve(positional[0] || ".");
+if (args.includes("-h") || args.includes("--help")) {
+  console.log(`Usage: nss-security-check [directory] [--json] [--fail-on=critical|high|medium|low|none] [--list]
 
-if (help) {
-  console.log(`Usage: nss-security-check [directory] [--json]
+Scan a Next.js + Supabase + Stripe project for ${Object.keys(CHECKS).length} common security mistakes (static analysis, no network).
 
-Scan a Next.js + Supabase + Stripe project for common AI-agent security mistakes.
-
-Options:
-  --json    Emit machine-readable JSON
-  -h, --help
-
-Exit code is always 0. Score and findings go to stdout.
-`);
+  --json        machine-readable output
+  --fail-on=X   exit 1 if any finding is at severity X or worse (default: none, always exit 0)
+  --list        list all checks and exit`);
   process.exit(0);
 }
-
-if (!existsSync(target) || !statSync(target).isDirectory()) {
-  console.error(`Not a directory: ${target}`);
-  // Still exit 0 per product contract — but surface the error on stderr
-  console.log(
-    JSON.stringify(
-      {
-        error: "not_a_directory",
-        target,
-        score: 0,
-        findings: [],
-      },
-      null,
-      2
-    )
-  );
+if (args.includes("--list")) {
+  for (const [id, c] of Object.entries(CHECKS)) console.log(`${id.padEnd(3)} ${c.sev.padEnd(8)} ${c.area.padEnd(9)} ${c.title}`);
   process.exit(0);
 }
+const failOn = (args.find((a) => a.startsWith("--fail-on="))?.split("=")[1] ?? "none").toLowerCase();
+if (failOn !== "none" && !SEVERITIES.includes(failOn)) { console.error(`--fail-on must be one of ${SEVERITIES.join(", ")}, none`); process.exit(2); }
+const dir = resolve(args.find((a) => !a.startsWith("-")) ?? ".");
+if (!existsSync(dir) || !statSync(dir).isDirectory()) { console.error(`Not a directory: ${dir}`); process.exit(2); }
 
-const result = scan(target);
-console.log(formatReport(result, { json, root: target }));
-process.exit(0);
+const r = scan(dir);
+const failing = failOn === "none" ? [] : r.findings.filter((f) => SEVERITIES.indexOf(f.sev) <= SEVERITIES.indexOf(failOn));
+
+if (args.includes("--json")) console.log(JSON.stringify(r, null, 2));
+else {
+  const tty = process.stdout.isTTY || process.env.FORCE_COLOR;
+  const c = (code, s) => (tty ? `\x1b[${code}m${s}\x1b[0m` : s);
+  const col = { critical: "1;31", high: "31", medium: "33", low: "36" };
+  console.log(c("1", `nss-security-check v${r.version}`) + `  ${r.filesScanned} files · ${Object.keys(CHECKS).length} checks\n`);
+  if (!r.findings.length) console.log(c("32", "✓ No findings.") + " Static checks only: this is not proof the app is secure.");
+  for (const f of r.findings) {
+    console.log(`${c(col[f.sev], f.sev.toUpperCase().padEnd(8))} ${c("1", f.id)}  ${f.title}`);
+    console.log(`         ${c("2", `${f.file}:${f.line}`)}  ${f.evidence}`);
+    console.log(`         ${c("2", "fix:")} ${f.fix}\n`);
+  }
+  console.log(SEVERITIES.map((s) => `${s} ${r.counts[s]}`).join(" · "));
+  if (r.findings.length) console.log(c("2", "Each hit is a prompt to review, not a verdict. Paid tools with deeper review are linked in the README."));
+}
+process.exit(failing.length ? 1 : 0);

@@ -1,7 +1,7 @@
 {
   "name": "nextjs-supabase-stripe-security-checker",
-  "version": "0.1.0",
-  "description": "Free static scanner for common Next.js + Supabase + Stripe security mistakes (AI-agent footguns).",
+  "version": "0.2.0",
+  "description": "Free static scanner: 20 checks for common Next.js + Supabase + Stripe security mistakes (AI-agent footguns).",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -32,6 +32,10 @@
   "author": "Stack & Ship",
   "scripts": {
     "start": "node bin/nss-security-check.js",
-    "smoke": "node scripts/smoke.js"
+    "smoke": "node scripts/smoke.js",
+    "test": "node --test tests/scan.test.mjs"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.29.9"
   }
 }
