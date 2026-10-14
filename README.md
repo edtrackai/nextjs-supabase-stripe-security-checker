@@ -1,6 +1,26 @@
 # nextjs-supabase-stripe-security-checker
 
+**Free, local security scan for Next.js + Supabase + Stripe apps: leaked keys, missing RLS and grants, unsafe Stripe webhooks.**
+
 **Your AI agent shipped the app. Did it also ship your Stripe secret key, a table without RLS, or a webhook that anyone can call?** One command finds out, locally, in under a second.
+
+```bash
+npx github:edtrackai/nextjs-supabase-stripe-security-checker /path/to/your/app
+```
+
+It isn't on npm yet, so `npx` runs it straight from this GitHub repo (needs Node 18+ and git).
+
+### Use in GitHub Actions
+
+```yaml
+- uses: edtrackai/nextjs-supabase-stripe-security-checker@v0
+  with:
+    fail-on: high
+```
+
+Full workflow and permissions are below and in [docs/github-action.md](docs/github-action.md).
+
+Supabase RLS checker · Stripe webhook security · Next.js security scan · Supabase Data API grants (42501)
 
 ![Demo: 24 checks catch leaked keys, missing RLS and grants, and unsafe Stripe webhooks, then a clean app passes --fail-on](docs/demo.gif)
 
@@ -12,7 +32,7 @@ cd nextjs-supabase-stripe-security-checker && npm install
 node bin/nss-security-check.js /path/to/your/app
 ```
 
-Node 18 or later. There's one dependency (`@babel/parser`). It's free and MIT-licensed, needs no account, makes no network calls and never uploads your code. It isn't on npm yet, so `npx` won't work.
+Node 18 or later. There's one dependency (`@babel/parser`). It's free and MIT-licensed, needs no account, makes no network calls and never uploads your code.
 
 - **24 checks** across leaked keys, server auth, Supabase RLS, Stripe webhooks/checkout and hardening. It uses AST parsing where regex would be fragile.
 - **Low noise:** 0 findings on a hardened reference app and on a "near-miss" fixture of safe code that looks like each bug.

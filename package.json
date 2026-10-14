@@ -1,7 +1,7 @@
 {
   "name": "nextjs-supabase-stripe-security-checker",
   "version": "0.6.0",
-  "description": "Free static scanner: 24 checks for common Next.js + Supabase + Stripe security mistakes (AI-agent footguns).",
+  "description": "Free static scanner: 24 checks for Next.js + Supabase + Stripe security mistakes (RLS, Data API grants, webhooks, leaked keys). CLI and GitHub Action.",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -26,7 +26,14 @@
     "security",
     "static-analysis",
     "rls",
-    "webhook"
+    "webhook",
+    "supabase-rls",
+    "stripe-webhook",
+    "nextjs-security",
+    "security-scanner",
+    "github-action",
+    "data-api-grants",
+    "42501"
   ],
   "repository": {
     "type": "git",
