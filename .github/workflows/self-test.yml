@@ -1,0 +1,50 @@
+# Add as .github/workflows/self-test.yml (needs a workflow-scoped token or the GitHub web UI)
+name: Action self-test
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm test
+
+  vulnerable-fixture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - id: scan
+        uses: ./            # the action in this repo, at the PR's commit
+        continue-on-error: true
+        with:
+          path: fixtures/vulnerable-app
+          fail-on: high
+          comment: true
+      - name: Expect findings and a failing step
+        run: |
+          echo "findings=${{ steps.scan.outputs.findings }} failing=${{ steps.scan.outputs.failing }} outcome=${{ steps.scan.outcome }}"
+          test "${{ steps.scan.outcome }}" = "failure"
+          test "${{ steps.scan.outputs.failing }}" -gt 0
+
+  clean-fixture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - id: scan
+        uses: ./
+        with:
+          path: fixtures/clean-app
+          fail-on: high
+          comment: false
+      - run: test "${{ steps.scan.outputs.failing }}" = "0"
