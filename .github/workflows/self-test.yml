@@ -1,0 +1,63 @@
+# .github/workflows/self-test.yml — apply via the GitHub web UI or a workflow-scoped token (not pushed by us)
+name: Action self-test
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read            # default for every job; only the commenting job gets PR write
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm test
+
+  vulnerable-fixture:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write  # create/update the one sticky PR comment
+    steps:
+      - uses: actions/checkout@v7
+      - id: scan
+        uses: ./
+        continue-on-error: true
+        with:
+          path: fixtures/vulnerable-app
+          fail-on: high
+          comment: true
+      - name: Expect findings and a failing step
+        env:
+          OUTCOME: ${{ steps.scan.outcome }}
+          FINDINGS: ${{ steps.scan.outputs.findings }}
+          FAILING: ${{ steps.scan.outputs.failing }}
+        run: |
+          echo "findings=$FINDINGS failing=$FAILING outcome=$OUTCOME"
+          test "$OUTCOME" = "failure"
+          test "$FAILING" -gt 0
+
+  clean-fixture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - id: scan
+        uses: ./
+        with:
+          path: fixtures/clean-app
+          fail-on: high
+          comment: false
+      - name: Expect zero findings
+        env:
+          FINDINGS: ${{ steps.scan.outputs.findings }}
+          FAILING: ${{ steps.scan.outputs.failing }}
+        run: |
+          echo "findings=$FINDINGS failing=$FAILING"
+          test "$FINDINGS" = "0"
+          test "$FAILING" = "0"
