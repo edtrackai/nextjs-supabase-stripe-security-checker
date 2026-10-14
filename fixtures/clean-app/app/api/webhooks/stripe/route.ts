@@ -24,6 +24,8 @@ export async function POST(request: Request) {
 
   // Idempotency: record the event as pending; mark it completed only after processing succeeds.
   // A retried event that is still pending (earlier attempt failed or crashed) is processed again.
+  // Safe here because every handler below is an idempotent upsert keyed on Stripe ids; with non-idempotent
+  // work, claim the row atomically with a lease (locked_until) instead. Side effects need their own dedupe key.
   const { error: insertError } = await db
     .from("stripe_events").insert({ id: event.id, type: event.type, status: "pending" });
   if (insertError) {
