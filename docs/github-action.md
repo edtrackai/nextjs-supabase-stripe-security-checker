@@ -43,6 +43,12 @@ The `@v0` tag doesn't exist until a release is published. Until then, pin a comm
 ## Outputs
 `findings`, `failing` (count at or above `fail-on`), and `comment-id`.
 
+## Annotations limit
+GitHub shows at most 10 error and 10 warning annotations per step inline. Larger scans still list every finding in the job summary and the PR comment.
+
+## Several paths in one workflow
+Each step's comment marker includes its `path`, so two steps scanning different folders keep two separate comments. Only comments by `github-actions[bot]` are ever edited.
+
 ## Permissions and privacy
 - **Least privilege:** the action needs `contents: read`, plus `pull-requests: write` only if `comment: true`. It uses only the token you pass (the default `GITHUB_TOKEN`); no other secrets.
 - **Network:** the scan itself runs locally on the runner with no network calls. Setup runs `npm ci` for the one dependency (`@babel/parser`). The PR comment step calls only the GitHub REST API (`GITHUB_API_URL`): list issue comments, then create or update one. There's no telemetry.

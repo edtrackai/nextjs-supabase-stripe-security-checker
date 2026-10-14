@@ -7,7 +7,7 @@ import { mkdtempSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { scan } from "../lib/scan.js";
-import { formatComment, formatSummary, redact, failing, MARKER } from "../action/format.mjs";
+import { formatComment, formatSummary, redact, failing, MARKER, markerFor } from "../action/format.mjs";
 import { upsertComment } from "../action/github.mjs";
 
 const fx = (n) => new URL(`../fixtures/${n}/`, import.meta.url).pathname;
@@ -19,7 +19,7 @@ const F = (o) => ({ id: "K1", sev: "critical", title: "Live key", file: "a.ts", 
 
 test("formatComment: marker, status, counts, table, fixes, links", () => {
   const c = formatComment(vuln, { failOn: "high", link: (f) => `https://gh/x/blob/sha/${f.file}#L${f.line}`, runUrl: "https://gh/run/1", sha: "abcdef1234" });
-  assert.ok(c.startsWith(MARKER));
+  assert.ok(c.startsWith(markerFor(".")));
   assert.match(c, /❌ \d+ finding\(s\) at or above `high`/);
   assert.match(c, /\| Severity \| Check \| Location \| Evidence \|/);
   assert.match(c, /\[`supabase\/migrations\/0003_audit_log\.sql:1`\]\(https:\/\/gh\/x\/blob\/sha\/supabase\/migrations\/0003_audit_log\.sql#L1\)/);
@@ -76,7 +76,7 @@ function mockGitHub() {
       if (req.headers.authorization !== "Bearer test-token") return send(403, { message: "Resource not accessible by integration" });
       let m;
       if (req.method === "GET" && (m = req.url.match(/^\/repos\/o\/r\/issues\/7\/comments\?/))) return send(200, comments);
-      if (req.method === "POST" && req.url === "/repos/o/r/issues/7/comments") { const c = { id: nextId++, body: JSON.parse(data).body }; comments.push(c); return send(201, c); }
+      if (req.method === "POST" && req.url === "/repos/o/r/issues/7/comments") { const c = { id: nextId++, user: { login: "github-actions[bot]", type: "Bot" }, body: JSON.parse(data).body }; comments.push(c); return send(201, c); }
       if (req.method === "PATCH" && (m = req.url.match(/^\/repos\/o\/r\/issues\/comments\/(\d+)$/))) { const c = comments.find((x) => x.id === +m[1]); c.body = JSON.parse(data).body; return send(200, c); }
       send(404, {});
     });
@@ -105,7 +105,7 @@ test("simulated run: vulnerable fixture fails at high, posts one comment, then u
     assert.equal(r1.code, 1, r1.stdout);
     assert.equal(gh.comments.length, 1);
     assert.match(r1.stdout, /PR comment created \(id 100\)/);
-    assert.ok(gh.comments[0].body.startsWith(MARKER));
+    assert.ok(gh.comments[0].body.startsWith(markerFor("fixtures/vulnerable-app")));
     assert.match(gh.comments[0].body, /https:\/\/github\.com\/o\/r\/blob\/1234567abcdef\/fixtures\/vulnerable-app\/supabase\/migrations\/0003_audit_log\.sql#L1/);
     assert.match(r1.summary, /## nss-security-check v[\d.]+/);
     assert.ok(+r1.outputs.findings > 20 && +r1.outputs.failing > 0 && r1.outputs["comment-id"] === "100");
@@ -146,7 +146,7 @@ test("simulated run: fork PR (read-only token) warns but still fails on findings
 });
 
 test("upsertComment paginates past 100 comments to find the marker", async () => {
-  const pages = { 1: Array.from({ length: 100 }, (_, i) => ({ id: i, body: "other" })), 2: [{ id: 555, body: `x ${MARKER}` }] };
+  const pages = { 1: Array.from({ length: 100 }, (_, i) => ({ id: i, body: "other" })), 2: [{ id: 555, user: { login: "github-actions[bot]", type: "Bot" }, body: `x ${markerFor(".")}` }] };
   const seen = [];
   const fetchImpl = async (url, o) => { seen.push(`${o.method} ${url}`); const p = +new URL(url).searchParams.get("page"); return { ok: true, json: async () => (o.method === "GET" ? pages[p] ?? [] : { id: 555 }) }; };
   const r = await upsertComment({ api: "http://x", repo: "o/r", issue: 1, token: "t", body: "b", fetchImpl });
@@ -158,4 +158,33 @@ test("action.yml: Marketplace metadata, composite runtime, inputs and defaults",
   for (const re of [/^name: ".+"/m, /^description: ".{10,125}"$/m, /^branding:\n  icon: "shield"\n  color: "green"/m, /using: "composite"/, /default: \$\{\{ github\.token \}\}/, /fail-on:\n[\s\S]*?default: "high"/, /comment:\n[\s\S]*?default: "true"/, /node "\$GITHUB_ACTION_PATH\/action\/run\.mjs"/])
     assert.match(y, re);
   assert.ok(!existsSync(new URL("../action.yaml", import.meta.url)), "single metadata file");
+});
+
+// ---------- M-02: author filter + per-path marker
+function fakeFetch(comments) {
+  const calls = [];
+  const fetchImpl = async (url, o) => { calls.push(`${o.method} ${url.replace("http://x", "")}`); const r = o.method === "GET" ? comments : { id: o.method === "POST" ? 999 : +url.split("/").pop() }; return { ok: true, status: 200, json: async () => r }; };
+  return { calls, fetchImpl };
+}
+const bot = { login: "github-actions[bot]", type: "Bot" };
+
+test("upsertComment ignores a marker pasted by a user and only edits github-actions[bot] comments", async () => {
+  const { calls, fetchImpl } = fakeFetch([{ id: 1, user: { login: "mallory", type: "User" }, body: markerFor(".") }, { id: 2, user: { login: "github-actions[bot]", type: "User" }, body: markerFor(".") }]);
+  const r = await upsertComment({ api: "http://x", repo: "o/r", issue: 1, token: "t", body: "b", fetchImpl });
+  assert.deepEqual(r, { action: "created", id: 999 });
+  assert.deepEqual(calls.map((c) => c.split(" ")[0]), ["GET", "POST"]);
+  const f2 = fakeFetch([{ id: 1, user: { login: "mallory", type: "User" }, body: markerFor(".") }, { id: 3, user: bot, body: markerFor(".") }]);
+  assert.deepEqual(await upsertComment({ api: "http://x", repo: "o/r", issue: 1, token: "t", body: "b", fetchImpl: f2.fetchImpl }), { action: "updated", id: 3 });
+});
+
+test("upsertComment: the marker includes the scan path, so two paths keep two comments; legacy path-less comment is adopted", async () => {
+  assert.notEqual(markerFor("apps/web"), markerFor("apps/api"));
+  assert.match(formatComment(vuln, { path: "apps/web" }), /^<!-- nss-security-check:pr-comment path=apps\/web -->/);
+  const comments = [{ id: 10, user: bot, body: markerFor("apps/web") }];
+  const a = fakeFetch(comments);
+  assert.deepEqual(await upsertComment({ api: "http://x", repo: "o/r", issue: 1, token: "t", body: "b", path: "apps/api", fetchImpl: a.fetchImpl }), { action: "created", id: 999 });
+  const b = fakeFetch([...comments, { id: 11, user: bot, body: markerFor("apps/api") }]);
+  assert.deepEqual(await upsertComment({ api: "http://x", repo: "o/r", issue: 1, token: "t", body: "b", path: "apps/api", fetchImpl: b.fetchImpl }), { action: "updated", id: 11 });
+  const l = fakeFetch([{ id: 6165650724, user: bot, body: `${MARKER}\nold` }]);
+  assert.deepEqual(await upsertComment({ api: "http://x", repo: "o/r", issue: 1, token: "t", body: "b", path: "fixtures/vulnerable-app", fetchImpl: l.fetchImpl }), { action: "updated", id: 6165650724 });
 });

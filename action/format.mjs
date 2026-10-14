@@ -1,5 +1,7 @@
 // Pure formatting for the GitHub Action: PR comment + job summary. No I/O.
-export const MARKER = "<!-- nss-security-check:pr-comment -->";
+export const MARKER = "<!-- nss-security-check:pr-comment -->"; // legacy (v0.4.x), path-less
+/** Per-path hidden marker, so two action steps in one PR keep separate comments. */
+export const markerFor = (path = ".") => `<!-- nss-security-check:pr-comment path=${String(path || ".").replace(/--|>/g, "_")} -->`;
 export const SEVERITIES = ["critical", "high", "medium", "low"];
 const ICON = { critical: "🔴", high: "🟠", medium: "🟡", low: "🔵" };
 const MAX_BODY = 60000; // GitHub's comment limit is 65,536 characters
@@ -41,12 +43,12 @@ function table(findings, { link } = {}) {
   return ["| Severity | Check | Location | Evidence |", "|---|---|---|---|", ...rows].join("\n");
 }
 
-/** opts: { failOn, link?: (finding) => url, runUrl?, sha? } */
+/** opts: { path?, failOn, link?: (finding) => url, runUrl?, sha? } */
 export function formatComment(result, opts = {}) {
   const failOn = opts.failOn ?? "high";
   const fails = failing(result, failOn);
   const status = !result.findings.length ? "✅ No findings" : fails.length ? `❌ ${fails.length} finding(s) at or above \`${failOn}\`` : `⚠️ ${result.findings.length} finding(s), none at or above \`${failOn}\``;
-  const head = [MARKER, `### nss-security-check: ${status}`, "", `${counts(result)} · ${result.filesScanned} files scanned · v${result.version}${opts.sha ? ` · \`${String(opts.sha).slice(0, 7)}\`` : ""}`, ""];
+  const head = [markerFor(opts.path), `### nss-security-check: ${status}`, "", `${counts(result)} · ${result.filesScanned} files scanned · v${result.version}${opts.sha ? ` · \`${String(opts.sha).slice(0, 7)}\`` : ""}`, ""];
   const tail = ["", "<sub>Static heuristics, not proof of security: each hit is a prompt to review. Secrets in evidence are redacted." + (opts.runUrl ? ` [Workflow run](${opts.runUrl})` : "") + "</sub>"];
   if (!result.findings.length) return [...head, "Static checks only: this is not proof the app is secure.", ...tail].join("\n");
   let shown = result.findings.length, body;

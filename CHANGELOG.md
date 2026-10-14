@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0 (2026-10-14)
+- **GitHub Action** (`action.yml`, composite): job summary, file/line annotations, and one sticky PR comment that's updated on re-runs. Inputs `path`, `fail-on`, `comment`, `github-token`; outputs `findings`, `failing`, `comment-id`. Evidence is redacted; no ads in CI. See docs/github-action.md. Use `@v0` or pin `@v0.5.0`.
+- The comment is matched only on comments by `github-actions[bot]`, and the hidden marker includes the scan path, so several action steps in one PR keep separate comments. Path-less v0.4.x comments are adopted.
+- When the scanned folder isn't a git repo (or git is missing), K3 is skipped with a note in the text output, `--json` (`notes`) and a workflow warning, instead of silently.
+
 ## 0.4.1 (2026-10-14)
 - The terminal footer is now labelled as an ad, per a marketing compliance review (UK CAP Code 2.1/2.3): "Ad (paid tools from the same author): 28-check Launch Audit $12 <link> · AI Rules pack $19 <link> (hide: --quiet or NO_PROMO=1)". It is still stderr-only, shown only on an interactive terminal, and off in CI, pipes, redirects and `--json`.
 - README "Want more?" opens with an ad/ownership disclosure.

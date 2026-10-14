@@ -41,6 +41,7 @@ else {
     console.log(`         ${c("2", `${f.file}:${f.line}`)}  ${f.evidence}`);
     console.log(`         ${c("2", "fix:")} ${f.fix}\n`);
   }
+  for (const n of r.notes ?? []) console.log(c("33", `note: ${n}`));
   console.log(SEVERITIES.map((s) => `${s} ${r.counts[s]}`).join(" · "));
   if (r.findings.length) console.log(c("2", "Each hit is a prompt to review, not a verdict."));
   // One static footer line: no network call, no tracking beyond the UTM tags in the printed links.
