@@ -103,7 +103,7 @@ Changes are listed in [CHANGELOG.md](CHANGELOG.md) (0.5.0 adds the Action).
 
 ## How it's tested
 
-- `fixtures/vulnerable-app` triggers all 21 file-based checks, and the tests assert each one at the expected file. K3 is tested on a temporary git repo.
+- `fixtures/vulnerable-app` triggers all 23 file-based checks, and the tests assert each one at the expected file. K3 is tested on a temporary git repo.
 - `fixtures/clean-app` (a hardened reference app) and `fixtures/near-miss` (safe code that *looks* like each mistake: raw-body webhooks with pending/completed idempotency, multi-item-safe period lookup, guarded redirects, owner-filtered admin queries, `select using (true)`, JSON-LD) must produce **0 findings**.
 - `npm test` runs the node:test suite, including the CLI flags and exit codes. `npm run smoke` gives a one-line summary.
 

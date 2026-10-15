@@ -30,8 +30,6 @@ jobs:
           # github-token defaults to the workflow's GITHUB_TOKEN
 ```
 
-The `@v0` tag doesn't exist until a release is published. Until then, pin a commit SHA from this repository.
-
 ## Inputs
 | Input | Default | What it does |
 |---|---|---|
