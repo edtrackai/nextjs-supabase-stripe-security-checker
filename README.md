@@ -89,7 +89,7 @@ Changes are listed in [CHANGELOG.md](CHANGELOG.md) (0.5.0 adds the Action).
 | R2 | critical | RLS | Write policy with `using (true)` / `with check (true)` |
 | R3 | high | RLS | Policy that lets the `anon` role write |
 | R4 | high | RLS | `security definer` function without a fixed `search_path` |
-| R5 | medium | RLS | Table in `public` with no explicit `GRANT`. From [30 Oct 2026](https://supabase.com/changelog/45329-breaking-change-tables-not-exposed-to-data-and-graphql-api-automatically) Supabase stops default grants on new public tables, so the Data API returns `42501` (fresh projects, branches and `db reset` already do) |
+| R5 | medium | RLS | Table in `public` with no explicit `GRANT`. Supabase announced it would stop default grants on new public tables from [30 Oct 2026](https://supabase.com/changelog/45329-breaking-change-tables-not-exposed-to-data-and-graphql-api-automatically), but in late August a Supabase CLI maintainer wrote (supabase/cli PR #6337) that the earlier default change "never landed" and hosted projects were still auto-granting, so the date may move: check what your own project does. Without a grant, the Data API returns `42501` |
 | R6 | high | RLS | Blanket `grant ... on all tables in schema public` / `alter default privileges ... grant` to `anon`/`authenticated` (the quick 42501 fix that also exposes tables without RLS) |
 | S1 | critical | Stripe | Webhook without signature verification (`constructEvent`) |
 | S2 | critical | Stripe | Webhook parses `request.json()` instead of the raw body |
