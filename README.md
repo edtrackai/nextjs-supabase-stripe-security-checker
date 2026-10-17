@@ -38,7 +38,7 @@ Node 18 or later. There's one dependency (`@babel/parser`). It's free and MIT-li
 - **Low noise:** 0 findings on a hardened reference app and on a "near-miss" fixture of safe code that looks like each bug.
 - **CI-ready:** `--fail-on=high` exits 1, and `--json` gives machine-readable output.
 
-*Ad (paid, same author):* Want the fixes? [Launch Audit ($12)](https://edtrackai.github.io/launch-audit?utm_source=github&utm_medium=readme&utm_campaign=sprint1&utm_content=nextjs-supabase-stripe-security-checker) adds 28 checks, an AI auditor agent with no Edit or Write tools, and a file:line fix plan.
+*Ad (paid, same author):* Want the fixes? [Launch Audit](https://edtrackai.github.io/launch-audit?utm_source=github&utm_medium=readme&utm_campaign=sprint1&utm_content=nextjs-supabase-stripe-security-checker) ($12 plus VAT where applicable) adds 28 checks, an AI auditor agent with no Edit or Write tools, and a file:line fix plan.
 
 ## Options
 
@@ -120,7 +120,7 @@ Changes are listed in [CHANGELOG.md](CHANGELOG.md) (0.5.0 adds the Action).
 
 This free CLI is a small subset. If you're about to launch:
 - **[Launch Audit](https://edtrackai.github.io/launch-audit?utm_source=github&utm_medium=readme&utm_campaign=sprint1&utm_content=nextjs-supabase-stripe-security-checker):** 28 automated checks plus an auditor agent with no Edit or Write tools for the manual checks, giving a ready / not-ready report with a fix plan.
-- **[Ship-Ready AI Rules](https://luxurydrive0.gumroad.com/l/ffjsf?utm_source=github&utm_medium=readme&utm_campaign=sprint1&utm_content=nextjs-supabase-stripe-security-checker):** rules, skills and guardrail hooks that stop AI coding agents writing these bugs in the first place.
+- **[Ship-Ready AI Rules](https://luxurydrive0.gumroad.com/l/ffjsf?utm_source=github&utm_medium=readme&utm_campaign=sprint1&utm_content=nextjs-supabase-stripe-security-checker):** rules, skills and guardrail hooks that help AI coding agents avoid writing these bugs in the first place.
 - **[Ship It Bundle](https://luxurydrive0.gumroad.com/l/ship-it-bundle?utm_source=github&utm_medium=readme&utm_campaign=sprint1&utm_content=nextjs-supabase-stripe-security-checker):** AI Rules + Launch Audit + Solo Founder OS Pro in one purchase.
 - **[Paid MCP Starter](https://luxurydrive0.gumroad.com/l/paid-mcp-starter?utm_source=github&utm_medium=readme&utm_campaign=sprint1&utm_content=nextjs-supabase-stripe-security-checker):** charge for your MCP server with Next.js + Supabase + Stripe.
 - Free: [security checklist](https://luxurydrive0.gumroad.com/l/security-checklist?utm_source=github&utm_medium=readme&utm_campaign=sprint1&utm_content=nextjs-supabase-stripe-security-checker) · [AI rules](https://edtrackai.github.io/ai-rules?utm_source=github&utm_medium=readme&utm_campaign=sprint1&utm_content=nextjs-supabase-stripe-security-checker)
@@ -130,7 +130,7 @@ On an interactive terminal, the human-readable output ends with one line on stde
 ## Related free tools
 
 - [ship-ready-skills](https://github.com/edtrackai/ship-ready-skills): free Agent Skills that review Supabase RLS and grants, and Stripe webhook handlers (`npx skills add edtrackai/ship-ready-skills`).
-- [Ship-Ready AI Rules (free sample)](https://github.com/edtrackai/ship-ready-ai-rules-free-sample): free Cursor/Claude rules that stop AI agents shipping these mistakes in Next.js + Supabase + Stripe.
+- [Ship-Ready AI Rules (free sample)](https://github.com/edtrackai/ship-ready-ai-rules-free-sample): free Cursor/Claude rules that help AI agents avoid shipping these mistakes in Next.js + Supabase + Stripe.
 
 ## License
 
