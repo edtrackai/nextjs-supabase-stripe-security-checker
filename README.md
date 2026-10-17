@@ -131,6 +131,8 @@ On an interactive terminal, the human-readable output ends with one line on stde
 
 - [ship-ready-skills](https://github.com/edtrackai/ship-ready-skills): free Agent Skills that review Supabase RLS and grants, and Stripe webhook handlers (`npx skills add edtrackai/ship-ready-skills`).
 - [Ship-Ready AI Rules (free sample)](https://github.com/edtrackai/ship-ready-ai-rules-free-sample): free Cursor/Claude rules that help AI agents avoid shipping these mistakes in Next.js + Supabase + Stripe.
+- [AI API cost calculator (OpenAI and Claude, per user per month)](https://edtrackai.github.io/tools/ai-api-cost-calculator?utm_source=github&utm_medium=readme&utm_campaign=sprint1&utm_content=nextjs-supabase-stripe-security-checker)
+- [Stack & Ship blog: Supabase, Stripe and AI-cost fixes](https://edtrackai.github.io/blog/?utm_source=github&utm_medium=readme&utm_campaign=sprint1&utm_content=nextjs-supabase-stripe-security-checker)
 
 ## License
 
